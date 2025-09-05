@@ -4,6 +4,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.parquet.avro.AvroParquetReader;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.parquet.hadoop.*;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedWriter;
@@ -32,8 +33,7 @@ public class ParquetProcessor {
         Map<String, Path> writerPaths = new LinkedHashMap<>();
         Result result = new Result();
 
-        try (AvroParquetReader<GenericRecord> reader = new AvroParquetReader<>(parquetFile.toFile().toPath())) {
-            GenericRecord record;
+        try (ParquetReader<GenericRecord> reader = AvroParquetReader.<GenericRecord>builder(new Path(parquetFile.toUri())).build()) {            GenericRecord record;
             long row = 0;
             while ((record = reader.read()) != null) {
                 row++;

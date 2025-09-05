@@ -101,8 +101,10 @@ public class JobRunnerService {
                             rowNum++; total++;
                             Map<String,Object> row = mapCsvRow(headers, line);
                             MappingDef mapping = findMappingForFile(proj.getId(), f.getFileName().toString());
-                            var rules = mapping==null? List.of() : validationService.parseRules(mapping.getMappingJson());
-                            var res = validationService.apply(rules, row);
+                            Object rawRules = mapping == null ? null : validationService.parseRules(mapping.getMappingJson());
+                            List<ValidationService.Rule> rules = rawRules == null
+                                    ? Collections.emptyList()
+                                    : om.convertValue(rawRules, new TypeReference<List<ValidationService.Rule>>() {});                            var res = validationService.apply(rules, row);
                             if(!res.errors.isEmpty()){
                                 errors += res.errors.size();
                                 for(String er: res.errors) errPr.printRecord(rowNum, er, line);
