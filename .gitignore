@@ -1,0 +1,39 @@
+# Maven target and build
+/target/
+/build/
+/out/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Logs
+*.log
+/logs/
+/hs_err_pid*
+/replay_pid*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Dependency directories
+/node_modules/
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+
+# AWS & credentials (never commit real keys)
+*.pem
+*.key
+*.crt
+*.der
+
+# Test reports
+surefire-reports/
+failsafe-reports/
+
+# Generated zips
+*.zip

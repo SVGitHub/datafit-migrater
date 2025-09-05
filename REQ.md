@@ -1,0 +1,1 @@
+This scaffold implements the REQ.md requirements. See conversation for full details.
