@@ -102,6 +102,22 @@
       <version>${poi.ooxml.version}</version>
     </dependency>
 
+    <!-- Hadoop common (provides org.apache.hadoop.fs.Path used by Parquet/Hadoop) -->
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>3.3.4</version>
+    </dependency>
+
+    <!-- Parquet Hadoop integration -->
+    <dependency>
+      <groupId>org.apache.parquet</groupId>
+      <artifactId>parquet-hadoop</artifactId>
+      <version>${parquet.avro.version}</version>
+    </dependency>
+
+    <!-- Jackson databind is already present; ensure jackson-databind is there (it was) -->
+
     <!-- SSH/SFTP -->
     <dependency>
       <groupId>com.hierynomus</groupId>

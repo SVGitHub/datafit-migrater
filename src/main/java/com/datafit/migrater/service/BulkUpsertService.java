@@ -30,15 +30,12 @@ public class BulkUpsertService {
     public boolean isValidIdentifier(String id){ return id!=null && id.matches(IDENT_REGEX); }
     public String quoteIdentifierPublic(String id, com.datafit.migrater.domain.DbType dbType){ return quoteIdentifier(id, dbType); }
 
-
     private String quoteIdentifier(String id, DbType dbType){
         if(id==null) throw new IllegalArgumentException("identifier null");
         if(!id.matches(IDENT_REGEX)) throw new IllegalArgumentException("Invalid identifier: " + id);
         if(dbType==DbType.MYSQL) return "`" + id + "`";
         // Postgres/Redshift and others use double quotes
-        return """ 
-                + id + 
-                """;
+        return "\"" + id + "\"";
     }
 
     private String joinQuoted(List<String> cols, DbType dbType){
@@ -61,11 +58,12 @@ public class BulkUpsertService {
         if(rows==null || rows.isEmpty()) return;
         if(m.columns==null || m.columns.isEmpty()) throw new IllegalArgumentException("no columns");
         if(m.upsertKeys==null || m.upsertKeys.isEmpty()) throw new IllegalArgumentException("no upsert keys for upsert");
-        String cols = joinQuoted(m.columns, m.dbType==null?DbType.POSTGRES:m.dbType);
+        DbType dialect = m.dbType==null?DbType.POSTGRES:m.dbType;
+        String cols = joinQuoted(m.columns, dialect);
         String placeholders = m.columns.stream().map(x->"?").collect(Collectors.joining(", "));
-        String conflict = m.upsertKeys.stream().map(k->quoteIdentifier(k, m.dbType==null?DbType.POSTGRES:m.dbType)).collect(Collectors.joining(", "));
-        String updates = m.columns.stream().map(col -> quoteIdentifier(col, m.dbType==null?DbType.POSTGRES:m.dbType) + " = EXCLUDED." + quoteIdentifier(col, m.dbType==null?DbType.POSTGRES:m.dbType)).collect(Collectors.joining(", "));
-        String sql = "INSERT INTO " + (m.schema!=null?quoteIdentifier(m.schema, m.dbType==null?DbType.POSTGRES:m.dbType)+".":"") + quoteIdentifier(m.table, m.dbType==null?DbType.POSTGRES:m.dbType)
+        String conflict = m.upsertKeys.stream().map(k->quoteIdentifier(k, dialect)).collect(Collectors.joining(", "));
+        String updates = m.columns.stream().map(col -> quoteIdentifier(col, dialect) + " = EXCLUDED." + quoteIdentifier(col, dialect)).collect(Collectors.joining(", "));
+        String sql = "INSERT INTO " + (m.schema!=null?quoteIdentifier(m.schema, dialect)+".":"") + quoteIdentifier(m.table, dialect)
                 + " (" + cols + ") VALUES (" + placeholders + ") ON CONFLICT (" + conflict + ") DO UPDATE SET " + updates;
         try(PreparedStatement ps = c.prepareStatement(sql)){
             for(Map<String,Object> r: rows){
@@ -81,10 +79,11 @@ public class BulkUpsertService {
     public void upsertMySql(Connection c, Mapping m, List<Map<String,Object>> rows) throws Exception {
         if(rows==null || rows.isEmpty()) return;
         if(m.columns==null || m.columns.isEmpty()) throw new IllegalArgumentException("no columns");
-        String cols = joinQuoted(m.columns, DbType.MYSQL);
+        DbType dialect = m.dbType==null?DbType.MYSQL:m.dbType;
+        String cols = joinQuoted(m.columns, dialect);
         String placeholders = m.columns.stream().map(x->"?").collect(Collectors.joining(", "));
-        String updates = m.columns.stream().map(col -> quoteIdentifier(col, DbType.MYSQL) + "=VALUES(" + quoteIdentifier(col, DbType.MYSQL) + ")").collect(Collectors.joining(", "));
-        String sql = "INSERT INTO " + (m.schema!=null?quoteIdentifier(m.schema, DbType.MYSQL)+".":"") + quoteIdentifier(m.table, DbType.MYSQL) + " (" + cols + ") VALUES (" + placeholders + ") ON DUPLICATE KEY UPDATE " + updates;
+        String updates = m.columns.stream().map(col -> quoteIdentifier(col, dialect) + "=VALUES(" + quoteIdentifier(col, dialect) + ")").collect(Collectors.joining(", "));
+        String sql = "INSERT INTO " + (m.schema!=null?quoteIdentifier(m.schema, dialect)+".":"") + quoteIdentifier(m.table, dialect) + " (" + cols + ") VALUES (" + placeholders + ") ON DUPLICATE KEY UPDATE " + updates;
         try(PreparedStatement ps = c.prepareStatement(sql)){
             for(Map<String,Object> r: rows){
                 for(int i=0;i<m.columns.size();i++){

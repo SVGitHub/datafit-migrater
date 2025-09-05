@@ -9,6 +9,9 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -36,6 +39,9 @@ public class JobRunnerService {
     private final ProjectRepository projectRepo; private final MappingRepository mappingRepo;
     private final ValidationService validationService; private final ParquetProcessor parquetProcessor; private final S3Service s3Service; private final RedshiftCopyService redshiftCopyService;
     private final ObjectMapper om = new ObjectMapper();
+
+    @Autowired
+    private SftpService sftpService;
 
     public JobRunnerService(JobRepository jobs, JobErrorRepository jobErrors, SettingsRepository settingsRepo, ProjectRepository projectRepo, MappingRepository mappingRepo, ValidationService validationService, ParquetProcessor parquetProcessor, S3Service s3Service, RedshiftCopyService redshiftCopyService){
         this.jobs = jobs; this.jobErrors = jobErrors; this.settingsRepo = settingsRepo; this.projectRepo = projectRepo; this.mappingRepo = mappingRepo; this.validationService = validationService; this.parquetProcessor = parquetProcessor; this.s3Service = s3Service; this.redshiftCopyService = redshiftCopyService;
