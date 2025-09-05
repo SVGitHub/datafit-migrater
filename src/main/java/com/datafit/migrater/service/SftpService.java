@@ -83,12 +83,7 @@ public class SftpService {
                         String name = r.getName();
                         if (!p.matcher(name).matches()) continue;
                         Path out = localDir.resolve(name);
-                        try (InputStream in = sftp.get(r.getPath());
-                             OutputStream outStream = new BufferedOutputStream(Files.newOutputStream(out, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING))) {
-                            byte[] buf = new byte[8192];
-                            int len;
-                            while ((len = in.read(buf)) > 0) outStream.write(buf, 0, len);
-                        }
+                        sftp.get(r.getPath(), out.toString());
                         downloaded.add(out);
                     }
                 }
