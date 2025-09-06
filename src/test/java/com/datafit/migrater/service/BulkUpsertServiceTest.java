@@ -16,7 +16,7 @@ public class BulkUpsertServiceTest {
 
     @Test public void testQuoteIdentifier(){
         BulkUpsertService s = new BulkUpsertService();
-        assertEquals(""col"", s.quoteIdentifierPublic("col", com.datafit.migrater.domain.DbType.POSTGRES));
+        assertEquals("'col'", s.quoteIdentifierPublic("col", com.datafit.migrater.domain.DbType.POSTGRES));
         assertEquals("`col`", s.quoteIdentifierPublic("col", com.datafit.migrater.domain.DbType.MYSQL));
     }
 }

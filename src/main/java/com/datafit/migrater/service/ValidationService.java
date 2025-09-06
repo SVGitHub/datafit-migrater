@@ -2,6 +2,7 @@ package com.datafit.migrater.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -18,6 +19,13 @@ public class ValidationService {
 
     public static class Result { public Map<String,Object> out = new LinkedHashMap<>(); public List<String> errors = new ArrayList<>(); }
 
+    /**
+     * Helper DTO for mapping info, used by tests and UI mapping.
+     */
+    public static class MappingInfo {
+        public List<?> columns = Collections.emptyList();
+        public List<String> upsertKeys = Collections.emptyList();
+    }
     public List<Rule> parseRules(String mappingJson) throws Exception {
         List<Rule> rules = new ArrayList<>();
         if (mappingJson == null || mappingJson.isBlank()) return rules;
@@ -61,5 +69,34 @@ public class ValidationService {
             r.out.put(rule.target, val);
         }
         return r;
+    }
+
+    /**
+     * Parse mapping JSON and return MappingInfo (columns + upsertKeys).
+     */
+    public MappingInfo getMappingInfo(String mappingJson) {
+        MappingInfo mi = new MappingInfo();
+        try {
+            if (mappingJson == null || mappingJson.isBlank()) {
+                return mi;
+            }
+            JsonNode root = om.readTree(mappingJson);
+
+            if (root.has("columns")) {
+                mi.columns = om.convertValue(
+                        root.get("columns"),
+                        new TypeReference<List<?>>() {}
+                );
+            }
+            if (root.has("upsertKeys")) {
+                mi.upsertKeys = om.convertValue(
+                        root.get("upsertKeys"),
+                        new TypeReference<List<String>>() {}
+                );
+            }
+        } catch (Exception e) {
+            System.err.println("ValidationService.getMappingInfo failed: " + e.getMessage());
+        }
+        return mi;
     }
 }

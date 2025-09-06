@@ -116,6 +116,12 @@
       <version>${parquet.avro.version}</version>
     </dependency>
 
+    <!-- Flyway for DB migrations -->
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+    </dependency>
+
     <!-- Jackson databind is already present; ensure jackson-databind is there (it was) -->
 
     <!-- SSH/SFTP -->
