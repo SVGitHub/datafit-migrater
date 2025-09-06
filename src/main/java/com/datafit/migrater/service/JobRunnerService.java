@@ -104,7 +104,8 @@ public class JobRunnerService {
                             Object rawRules = mapping == null ? null : validationService.parseRules(mapping.getMappingJson());
                             List<ValidationService.Rule> rules = rawRules == null
                                     ? Collections.emptyList()
-                                    : om.convertValue(rawRules, new TypeReference<List<ValidationService.Rule>>() {});                            var res = validationService.apply(rules, row);
+                                    : om.convertValue(rawRules, new TypeReference<List<ValidationService.Rule>>() {});
+                            var res = validationService.apply(rules, row);
                             if(!res.errors.isEmpty()){
                                 errors += res.errors.size();
                                 for(String er: res.errors) errPr.printRecord(rowNum, er, line);
@@ -136,8 +137,10 @@ public class JobRunnerService {
                                     rowNum++;
                                     Map<String,Object> row = mapCsvRow(headers, line);
                                     MappingDef mapping = findMappingForFile(proj.getId(), f.getFileName().toString());
-                                    var rules = mapping==null? List.of() : validationService.parseRules(mapping.getMappingJson());
-                                    var res = validationService.apply(rules, row);
+                                    Object rawRules = mapping == null ? null : validationService.parseRules(mapping.getMappingJson());
+                                    List<ValidationService.Rule> rules = rawRules == null
+                                            ? Collections.emptyList()
+                                            : om.convertValue(rawRules, new TypeReference<List<ValidationService.Rule>>() {});                                    var res = validationService.apply(rules, row);
                                     if(!res.errors.isEmpty()){
                                         errors += res.errors.size();
                                         for(String er: res.errors) errPr.printRecord(rowNum, er, line);
@@ -163,8 +166,10 @@ public class JobRunnerService {
                                 var cell = r.getCell(i); String v = cell==null?null:cell.toString(); row.put(headers.get(i), v);
                             }
                             MappingDef mapping = findMappingForFile(proj.getId(), f.getFileName().toString());
-                            var rules = mapping==null? List.of() : validationService.parseRules(mapping.getMappingJson());
-                            var res = validationService.apply(rules, row);
+                            Object rawRules = mapping == null ? null : validationService.parseRules(mapping.getMappingJson());
+                            List<ValidationService.Rule> rules = rawRules == null
+                                    ? Collections.emptyList()
+                                    : om.convertValue(rawRules, new TypeReference<List<ValidationService.Rule>>() {});                            var res = validationService.apply(rules, row);
                             if(!res.errors.isEmpty()){ errors += res.errors.size(); for(String er: res.errors) errPr.printRecord(rowNum, er, row.toString()); } else { success++; }
                         }
                     }

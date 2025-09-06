@@ -33,7 +33,10 @@ public class ParquetProcessor {
         Map<String, Path> writerPaths = new LinkedHashMap<>();
         Result result = new Result();
 
-        try (ParquetReader<GenericRecord> reader = AvroParquetReader.<GenericRecord>builder(new Path(parquetFile.toUri())).build()) {            GenericRecord record;
+        try (ParquetReader<GenericRecord> reader = AvroParquetReader.<GenericRecord>builder(
+                new org.apache.hadoop.fs.Path(parquetFile.toUri().toString())
+        ).build()) {
+            GenericRecord record;
             long row = 0;
             while ((record = reader.read()) != null) {
                 row++;
