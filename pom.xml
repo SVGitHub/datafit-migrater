@@ -63,6 +63,13 @@
       <artifactId>spring-boot-starter-oauth2-client</artifactId>
     </dependency>
 
+    <!-- Added Spring Security OAuth2 client for SSO -->
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-oauth2-client</artifactId>
+    </dependency>
+
     <!-- Databases -->
     <dependency>
       <groupId>com.h2database</groupId>
@@ -189,4 +196,4 @@
     <finalName>datafit-migrater</finalName>
   </build>
 </project>
-<!-- Added Spring Security OAuth2 client for SSO -->
+

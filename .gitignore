@@ -37,3 +37,6 @@ failsafe-reports/
 
 # Generated zips
 *.zip
+
+# Local yaml file
+application-dev-local.yml
