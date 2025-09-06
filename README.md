@@ -137,14 +137,3 @@ Or run individual test classes from IntelliJ's test runner.
 - S3 failures: verify IAM credentials / permissions and S3 bucket name/region.
 
 ---
-
-## How I can continue to help
-- Add Docker Compose for local dev (Postgres, MySQL, sample S3 via LocalStack) and CI integration.
-- Implement encrypted secrets storage and retrieval (AWS Secrets Manager / Vault).
-- Polish mapping designer to full-featured visual designer (drag connectors, preview rows, mapping conflicts).
-- Add end-to-end integration tests with Docker-based DBs and LocalStack S3.
-
----
-
-**If you'd like, I can now:**
-- add the `README.md` into the project zip and create a fresh downloadable archive (I can do that now and provide a download link).
