@@ -4,6 +4,7 @@ import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.sftp.*;
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
+import org.springframework.stereotype.*;
 
 import java.io.*;
 import java.nio.file.*;
@@ -15,6 +16,7 @@ import java.util.stream.*;
  * Simplified SftpService snippet showing host-key verification via OpenSSHKnownHosts (StringReader)
  * and a PromiscuousVerifier fallback for dev.
  */
+@Service
 public class SftpService {
 
     public SFTPClient connectAndCreateSftp(String host, int port, String user, String password, String knownHostsContent) throws Exception {

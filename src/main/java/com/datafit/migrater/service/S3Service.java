@@ -1,65 +1,100 @@
 package com.datafit.migrater.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.Delete;
-import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
-import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
- * S3 helper using AWS SDK v2.
- * Expects credentials / region via environment or instance profile.
+ * Lazy/deferred S3Service wired to real ClientFactory (per-profile).
  */
 @Service
 public class S3Service {
 
-    private final S3Client s3;
+    private final ClientFactory clientFactory;
+    private final String defaultRegion;
+    private final Optional<String> defaultEndpoint;
 
-    public S3Service() {
-        this.s3 = S3Client.builder()
-                .credentialsProvider(DefaultCredentialsProvider.create())
-                .build();
+    public S3Service(ClientFactory clientFactory,
+                     @Value("${aws.region:}") String defaultRegion,
+                     @Value("${aws.s3.endpoint:}") Optional<String> defaultEndpoint) {
+        this.clientFactory = Objects.requireNonNull(clientFactory);
+        this.defaultRegion = (defaultRegion == null || defaultRegion.isBlank()) ? null : defaultRegion;
+        this.defaultEndpoint = defaultEndpoint;
     }
 
-    public String uploadFile(String bucket, String keyPrefix, Path file) throws IOException {
-        Objects.requireNonNull(bucket, "bucket required");
-        String key = (keyPrefix == null || keyPrefix.isBlank()) ? file.getFileName().toString() : (keyPrefix + "/" + file.getFileName().toString());
-        PutObjectRequest req = PutObjectRequest.builder().bucket(bucket).key(key).build();
-        s3.putObject(req, RequestBody.fromFile(file));
-        return "s3://" + bucket + "/" + key;
+    public Optional<S3Client> s3ClientForProfile(Optional<UUID> profileId) {
+        try {
+            if (profileId != null && profileId.isPresent()) {
+                Optional<S3Client> p = clientFactory.s3ClientForProfile(profileId.get());
+                if (p.isPresent()) return p;
+            }
+            if (defaultRegion != null) {
+                S3ClientBuilder b = S3Client.builder().region(Region.of(defaultRegion));
+                defaultEndpoint.ifPresent(e -> b.endpointOverride(URI.create(e)));
+                return Optional.of(b.build());
+            }
+            return Optional.empty();
+        } catch (Exception ex) {
+            System.err.println("S3Service.s3ClientForProfile: error creating client: " + ex.getMessage());
+            return Optional.empty();
+        }
     }
 
-    public String uploadStream(String bucket, String key, InputStream is, long contentLength) throws IOException {
-        Objects.requireNonNull(bucket, "bucket required");
-        PutObjectRequest req = PutObjectRequest.builder().bucket(bucket).key(key).build();
-        s3.putObject(req, RequestBody.fromInputStream(is, contentLength));
-        return "s3://" + bucket + "/" + key;
+    public String uploadFile(UUID profileId, String bucket, String key, Path file) {
+        return uploadFile(Optional.ofNullable(profileId), bucket, key, file)
+                .orElseThrow(() -> new IllegalStateException("No S3 client available for uploadFile"));
     }
 
-    public void deletePrefix(String bucket, String keyPrefix) {
-        if (bucket==null || bucket.isBlank() || keyPrefix==null) return;
-        String prefix = keyPrefix.endsWith("/") ? keyPrefix : keyPrefix + "/";
-        ListObjectsV2Request listReq = ListObjectsV2Request.builder().bucket(bucket).prefix(prefix).build();
-        ListObjectsV2Response listRes = s3.listObjectsV2(listReq);
-        List<S3Object> objs = listRes.contents();
-        if (objs == null || objs.isEmpty()) return;
-        List<String> keys = objs.stream().map(S3Object::key).collect(Collectors.toList());
-        var del = Delete.builder().objects(keys.stream().map(k->software.amazon.awssdk.services.s3.model.ObjectIdentifier.builder().key(k).build()).collect(Collectors.toList())).build();
-        DeleteObjectsRequest dor = DeleteObjectsRequest.builder().bucket(bucket).delete(del).build();
-        s3.deleteObjects(dor);
+    public String uploadFile(String bucket, String key, Path file) {
+        return uploadFile(Optional.empty(), bucket, key, file)
+                .orElseThrow(() -> new IllegalStateException("No S3 client available for uploadFile"));
+    }
+
+    public Optional<String> uploadFile(Optional<UUID> profileId, String bucket, String key, Path file) {
+        Optional<S3Client> clientOpt = s3ClientForProfile(profileId);
+        if (clientOpt.isEmpty()) return Optional.empty();
+        try {
+            S3Client c = clientOpt.get();
+            PutObjectRequest req = PutObjectRequest.builder().bucket(bucket).key(key).build();
+            c.putObject(req, RequestBody.fromFile(file));
+            return Optional.of("s3://" + bucket + "/" + key);
+        } catch (Exception ex) {
+            System.err.println("S3Service.uploadFile failed: " + ex.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    public String uploadStream(UUID profileId, String bucket, String key, InputStream stream, long contentLength) {
+        return uploadStream(Optional.ofNullable(profileId), bucket, key, stream, contentLength)
+                .orElseThrow(() -> new IllegalStateException("No S3 client available for uploadStream"));
+    }
+
+    public Optional<String> uploadStream(Optional<UUID> profileId, String bucket, String key, InputStream stream, long contentLength) {
+        Optional<S3Client> clientOpt = s3ClientForProfile(profileId);
+        if (clientOpt.isEmpty()) return Optional.empty();
+        try {
+            S3Client c = clientOpt.get();
+            PutObjectRequest req = PutObjectRequest.builder().bucket(bucket).key(key).build();
+            c.putObject(req, RequestBody.fromInputStream(stream, contentLength));
+            return Optional.of("s3://" + bucket + "/" + key);
+        } catch (Exception ex) {
+            System.err.println("S3Service.uploadStream failed: " + ex.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    public Optional<String> uploadStream(String bucket, String key, InputStream stream, long contentLength) {
+        return uploadStream(Optional.empty(), bucket, key, stream, contentLength);
     }
 }

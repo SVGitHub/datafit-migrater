@@ -30,12 +30,24 @@ public class BulkUpsertService {
     public boolean isValidIdentifier(String id){ return id!=null && id.matches(IDENT_REGEX); }
     public String quoteIdentifierPublic(String id, com.datafit.migrater.domain.DbType dbType){ return quoteIdentifier(id, dbType); }
 
-    private String quoteIdentifier(String id, DbType dbType){
-        if(id==null) throw new IllegalArgumentException("identifier null");
-        if(!id.matches(IDENT_REGEX)) throw new IllegalArgumentException("Invalid identifier: " + id);
-        if(dbType==DbType.MYSQL) return "`" + id + "`";
-        // Postgres/Redshift and others use double quotes
-        return "\"" + id + "\"";
+    /**
+     * Quote SQL identifier for the target DB.
+     * Public so tests and other services can reuse.
+     */
+    public static String quoteIdentifier(String identifier, DbType db) {
+        if (identifier == null) return null;
+        switch (db == null ? DbType.REDSHIFT : db) {
+            case MYSQL:
+                // MySQL uses backticks for identifiers
+                return "`" + identifier.replace("`", "``") + "`";
+            case POSTGRES:
+            case REDSHIFT:
+                // Postgres and Redshift use double quotes
+                return "\"" + identifier.replace("\"", "\"\"") + "\"";
+            default:
+                // Fallback: return as-is
+                return identifier;
+        }
     }
 
     private String joinQuoted(List<String> cols, DbType dbType){
