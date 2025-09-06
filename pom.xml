@@ -189,3 +189,4 @@
     <finalName>datafit-migrater</finalName>
   </build>
 </project>
+<!-- Added Spring Security OAuth2 client for SSO -->
