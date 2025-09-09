@@ -167,6 +167,11 @@
       <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -183,7 +188,23 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.14.0</version>
         <configuration>
+          <!-- Compile target (keeps what you already had) -->
           <release>${java.version}</release>
+
+          <!-- Ensure annotation processors are executed (Lombok) -->
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>1.18.32</version>
+            </path>
+          </annotationProcessorPaths>
+
+          <!-- Optional: helps with better javac diagnostics -->
+          <compilerArgs>
+            <arg>-Xlint:deprecation</arg>
+            <arg>-parameters</arg>
+          </compilerArgs>
         </configuration>
       </plugin>
 

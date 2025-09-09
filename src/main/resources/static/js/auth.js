@@ -1,13 +1,39 @@
-async function initAuth(){
-  const mount = document.getElementById('authArea');
-  try {
-    const me = await api('/api/me');
-    window.CurrentUser = me;
-    mount.innerHTML = `<span class="badge">Signed in as ${escapeHtml(me.email||'user')}</span> <a class="badge" href="/logout">Logout</a>` + (me.admin?` <span class="badge">Admin</span>`:'');
-    if(!me.admin){
-      document.querySelectorAll('[data-admin-only]').forEach(e=>e.style.display='none');
-    }
-  } catch(e) {
-    mount.innerHTML = `<a class="badge" href="/oauth2/authorization/google">Sign in with Google</a>`;
-  }
-}
+// ==============================
+// auth.js - Authentication Page
+// ==============================
+
+import { apiFetch, showToast } from "./utils.js";
+
+document.addEventListener("DOMContentLoaded", () => {
+    const loginForm = document.querySelector("#loginForm");
+    const ssoBtn = document.querySelector("#ssoLoginBtn");
+
+    // ---- Local Login ----
+    loginForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = Object.fromEntries(new FormData(loginForm));
+
+        try {
+            const response = await apiFetch("/perform_login", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams(formData).toString()
+            });
+
+            if (response?.authenticated) {
+                showToast("Login successful", "success");
+                window.location.href = "/home";
+            } else {
+                showToast("Invalid username or password", "error");
+            }
+        } catch {
+            showToast("Login failed", "error");
+        }
+    });
+
+    // ---- SSO Login ----
+    ssoBtn?.addEventListener("click", () => {
+        // Redirect to OAuth2 login
+        window.location.href = "/oauth2/authorization/google";
+    });
+});

@@ -12,3 +12,16 @@ spring:
 
   flyway:
     enabled: false
+
+  security:
+    oauth2:
+      client:
+        registration: { }
+        provider: { }
+
+app:
+  security:
+    admin:
+      username: test-admin
+      password: test-pass
+    admin-emails: testadmin@example.com

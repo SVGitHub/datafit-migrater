@@ -22,7 +22,13 @@ spring:
   profiles:
     active: dev-local
 
+  logging:
+    level:
+      org.springframework.security: DEBUG
+
 app:
   security:
-    admin-emails:
-      - meetsnehadeep@gmail.com
+    admin:
+      username: { $ADMIN_USER }
+      password: { $PASSWORD }
+    admin-emails: meetsnehadeep@gmail.com

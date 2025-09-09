@@ -2,6 +2,7 @@ package com.datafit.migrater.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.List;
 /**
  * Holds security-related custom properties from application.yml
  */
-@Configuration
+@Component
 @ConfigurationProperties(prefix = "app.security")
 public class AdminSecurityProperties {
 

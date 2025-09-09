@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mappings</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    .toast-container {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1050;
+    }
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      margin-bottom: 0.5rem;
+      color: #fff;
+      font-size: 0.9rem;
+      animation: fadein 0.3s;
+    }
+    .toast-success { background: #28a745; }
+    .toast-error { background: #dc3545; }
+    .toast-info { background: #17a2b8; }
+    @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+
+    #loader {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.7);
+      z-index: 2000;
+    }
+  </style>
+</head>
+<body class="container py-4">
+<h2><i class="fas fa-diagram-project"></i> Mapping Designer</h2>
+
+<div class="mb-3">
+  <label class="form-label">Project ID</label>
+  <input type="text" id="projectId" class="form-control" placeholder="Enter project ID" />
+</div>
+
+<div class="mb-3">
+  <label class="form-label">File Pattern</label>
+  <input type="text" id="filePattern" class="form-control" placeholder="*.csv" />
+</div>
+
+<div class="mb-3">
+  <label class="form-label">Mapping JSON</label>
+  <textarea id="mappingJson" class="form-control" rows="4" placeholder='{"columns": [...]}'></textarea>
+</div>
+
+<button id="saveMappingBtn" class="btn btn-success">
+  <i class="fas fa-save"></i> Save Mapping
+</button>
+
+<hr />
+
+<h4>Existing Mappings</h4>
+<table class="table table-striped">
+  <thead>
+  <tr>
+    <th>File Pattern</th>
+    <th>Mapping</th>
+    <th>Actions</th>
+  </tr>
+  </thead>
+  <tbody id="mappingTableBody"></tbody>
+</table>
+
+<!-- Loader -->
+<div id="loader"><i class="fas fa-spinner fa-spin fa-3x"></i></div>
+
+<!-- Toast notifications -->
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="/js/mapping.js"></script>
+</body>
+</html>
